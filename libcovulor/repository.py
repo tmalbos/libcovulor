@@ -53,4 +53,4 @@ class Repository:
             return None
 
 class RepositoryModel(BaseModel):
-    client_id: str = Field(alias=Repository.CLIENT_ID)
+    object_id: str = Field(exclude=True, alias='_id')

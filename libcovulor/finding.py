@@ -1,4 +1,4 @@
-from .database import findings_collection
+from .database import find_one, findings_collection
 from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 
@@ -88,7 +88,12 @@ class Finding:
 
             return None
 
+    @staticmethod
+    def find_one(client_id: str, finding_id: str):
+        return find_one(findings_collection, client_id, finding_id)
+
 class FindingModel(BaseModel):
+    object_id: str = Field(exclude=True, alias='_id')
     access_credential: str = Field(default=None, alias=Finding.ACCESS_CREDENTIAL)
     actual_line: int = Field(ge=1, alias=Finding.ACTUAL_LINE)
     asvs_id: str = Field(default=None, alias=Finding.ASVS_ID)
