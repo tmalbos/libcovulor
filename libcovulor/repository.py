@@ -54,4 +54,4 @@ class Repository:
             return None
 
 class RepositoryModel(BaseModel):
-    _id: ObjectId = Field(exclude=True, alias='_id')
+    object_id: ObjectId = Field(exclude=True, alias='_id')

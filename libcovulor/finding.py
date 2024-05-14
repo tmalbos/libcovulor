@@ -90,7 +90,7 @@ class Finding:
             return None
 
 class FindingModel(BaseModel):
-    _id: ObjectId = Field(exclude=True, alias='_id')
+    object_id: ObjectId = Field(exclude=True, alias='_id')
     access_credential: str = Field(default=None, alias=Finding.ACCESS_CREDENTIAL)
     actual_line: int = Field(ge=1, alias=Finding.ACTUAL_LINE)
     asvs_id: str = Field(default=None, alias=Finding.ASVS_ID)
