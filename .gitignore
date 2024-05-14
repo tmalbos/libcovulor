@@ -1,0 +1,6 @@
+.idea/
+.vscode/
+build/
+libcovulor.egg-info/
+libcovulor/__pycache__/
+venv/
