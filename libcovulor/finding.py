@@ -1,5 +1,4 @@
 from .database import findings_collection
-from bson.objectid import ObjectId
 from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 
@@ -90,7 +89,6 @@ class Finding:
             return None
 
 class FindingModel(BaseModel):
-    object_id: ObjectId = Field(exclude=True, alias='_id')
     access_credential: str = Field(default=None, alias=Finding.ACCESS_CREDENTIAL)
     actual_line: int = Field(ge=1, alias=Finding.ACTUAL_LINE)
     asvs_id: str = Field(default=None, alias=Finding.ASVS_ID)

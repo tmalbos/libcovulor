@@ -1,5 +1,4 @@
 from .database import repositories_collection
-from bson.objectid import ObjectId
 from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 
@@ -54,4 +53,4 @@ class Repository:
             return None
 
 class RepositoryModel(BaseModel):
-    object_id: ObjectId = Field(exclude=True, alias='_id')
+    client_id: str = Field(alias=Repository.CLIENT_ID)
