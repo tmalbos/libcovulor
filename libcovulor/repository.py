@@ -1,4 +1,4 @@
-from .database import repositories_collection
+from .database import delete_one, find_many, find_one, repositories_collection, update_one
 from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 
@@ -20,7 +20,7 @@ class Repository:
     URL = 'url'
 
     @staticmethod
-    def create_repository(data: dict):
+    def create(data: dict):
         try:
             existing_document = repositories_collection.find_one({Repository.URL: data["uri"]})
 
@@ -51,6 +51,38 @@ class Repository:
             print(f'Error: {e}')
 
             return None
+
+    @staticmethod
+    def delete(client_id: str, finding_id: str):
+        dict_finding = delete_one(repositories_collection, client_id, finding_id)
+        # return RepositoryModel.parse_obj(dict_finding)
+        return dict_finding
+
+    @staticmethod
+    def find_many(client_id: str, options: dict = None):
+        findings = find_many(repositories_collection, client_id, options)
+        model_data = []
+
+        for finding in findings['data']:
+            #model_finding = RepositoryModel.parse_obj(finding)
+            model_finding = finding
+            model_data.append(model_finding)
+
+        findings['data'] = model_data
+
+        return findings
+
+    @staticmethod
+    def find_one(client_id: str, finding_id: str):
+        dict_finding = find_one(repositories_collection, client_id, finding_id)
+        # return RepositoryModel.parse_obj(dict_finding)
+        return dict_finding
+
+    @staticmethod
+    def update(client_id: str, finding_id: str, data: dict):
+        dict_finding = update_one(repositories_collection, client_id, finding_id, data)
+        # return RepositoryModel.parse_obj(dict_finding)
+        return dict_finding
 
 class RepositoryModel(BaseModel):
     object_id: str = Field(exclude=True, alias='_id')
