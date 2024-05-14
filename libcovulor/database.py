@@ -95,8 +95,8 @@ def find_many(collection: Collection, client_id: str, options: dict = None):
 
 def find_one(collection: Collection, client_id: str, _id: str):
     try:
-        result = collection.find_one({"client_id": client_id,
-                                          "_id": ObjectId(_id)})
+        result = collection.find_one({"_id": ObjectId(_id),
+                                      "client_id": client_id})
 
         if result is None:
             return None
@@ -110,8 +110,8 @@ def find_one(collection: Collection, client_id: str, _id: str):
         return None
 
 def update_one(collection: Collection, client_id: str, _id: str, data: dict):
-    query_filter = {"client_id": client_id,
-                    "_id": ObjectId(_id)}
+    query_filter = {"_id": ObjectId(_id),
+                    "client_id": client_id}
 
     try:
         result = collection.update_one(query_filter, {"$set": data})

@@ -1,4 +1,4 @@
-from .database import find_one, findings_collection
+from .database import delete_one, find_many, find_one, findings_collection, update_one
 from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 
@@ -89,8 +89,32 @@ class Finding:
             return None
 
     @staticmethod
+    def delete(client_id: str, finding_id: str):
+        dict_finding = delete_one(findings_collection, client_id, finding_id)
+        return FindingModel.parse_obj(dict_finding)
+
+    @staticmethod
+    def find_many(client_id: str, options: dict = None):
+        findings = find_many(findings_collection, client_id, options)
+        model_data = []
+
+        for finding in findings['data']:
+            model_finding = FindingModel.parse_obj(finding)
+            model_data.append(model_finding)
+
+        findings['data'] = model_data
+
+        return findings
+
+    @staticmethod
     def find_one(client_id: str, finding_id: str):
-        return find_one(findings_collection, client_id, finding_id)
+        dict_finding = find_one(findings_collection, client_id, finding_id)
+        return FindingModel.parse_obj(dict_finding)
+
+    @staticmethod
+    def update(client_id: str, finding_id: str, data: dict):
+        dict_finding = update_one(findings_collection, client_id, finding_id, data)
+        return FindingModel.parse_obj(dict_finding)
 
 class FindingModel(BaseModel):
     object_id: str = Field(exclude=True, alias='_id')
