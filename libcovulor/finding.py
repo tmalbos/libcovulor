@@ -83,7 +83,7 @@ class Finding:
 
             data[Finding.PROCESSING_STATUS] = "processing"
             finding_model = FindingModel.parse_obj(data)
-            finding = findings_collection.insert_one(finding_model)
+            finding = findings_collection.insert_one(finding_model.to_dict())
 
             return FindingModel.parse_obj(finding)
         except PyMongoError as e:
