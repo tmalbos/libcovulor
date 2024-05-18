@@ -8,6 +8,7 @@ class Repository:
     BRANCH = 'repository_branch'
     CLIENT_ID = 'client_id'
     DESCRIPTION = 'description'
+    ID = 'repository_id'
     NAME = 'alias'
     PRIORITY = 'priority'
     PROCESSING_STATUS = 'processing_status'
@@ -40,7 +41,7 @@ class Repository:
                 Repository.AUTH: data['github_oauth_token'],
                 Repository.PROCESSING_STATUS: "processing",
                 Repository.BRANCH: data["data"]["git_connection"]["repo_branch"],
-                Repository.SOURCE_CONTROL: data['source_control'],
+                Repository.SOURCE_CONTROL: data[Repository.SOURCE_CONTROL],
                 Repository.PRIORITY: data[Repository.PRIORITY],
                 Repository.TAGS: data[Repository.TAGS]
             }
@@ -53,36 +54,36 @@ class Repository:
             return None
 
     @staticmethod
-    def delete(client_id: str, finding_id: str):
-        dict_finding = delete_one(repositories_collection, client_id, finding_id)
-        # return RepositoryModel.parse_obj(dict_finding)
-        return dict_finding
+    def delete(client_id: str, repository_id: str):
+        dict_repository = delete_one(repositories_collection, client_id, repository_id)
+        # return RepositoryModel.parse_obj(dict_repository)
+        return dict_repository
 
     @staticmethod
     def find_many(client_id: str, options: dict = None):
-        findings = find_many(repositories_collection, client_id, options)
+        repositories = find_many(repositories_collection, client_id, options)
         model_data = []
 
-        for finding in findings['data']:
-            #model_finding = RepositoryModel.parse_obj(finding)
-            model_finding = finding
-            model_data.append(model_finding)
+        for repo in repositories['data']:
+            #model_repository = RepositoryModel.parse_obj(repo['attributes'])
+            model_repository = repo
+            model_data.append(model_repository)
 
-        findings['data'] = model_data
+        repositories['data'] = model_data
 
-        return findings
-
-    @staticmethod
-    def find_one(client_id: str, finding_id: str):
-        dict_finding = find_one(repositories_collection, client_id, finding_id)
-        # return RepositoryModel.parse_obj(dict_finding)
-        return dict_finding
+        return repositories
 
     @staticmethod
-    def update(client_id: str, finding_id: str, data: dict):
-        dict_finding = update_one(repositories_collection, client_id, finding_id, data)
+    def find_one(client_id: str, repository_id: str):
+        dict_repository = find_one(repositories_collection, client_id, repository_id)
+        # return RepositoryModel.parse_obj(dict_repository)
+        return dict_repository
+
+    @staticmethod
+    def update(client_id: str, repository_id: str, data: dict):
+        dict_repository = update_one(repositories_collection, client_id, repository_id, data)
         # return RepositoryModel.parse_obj(dict_finding)
-        return dict_finding
+        return dict_repository
 
 class RepositoryModel(BaseModel):
     object_id: str = Field(exclude=True, alias='_id')

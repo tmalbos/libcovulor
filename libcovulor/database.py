@@ -18,6 +18,8 @@ owasps_collection = db['OWASP']
 remediation_collection = db['Remediation']
 repositories_collection = db['Repository']
 rules_collection = db['Rules']
+scans_collection = db['Scan']
+scan_requests_collection = db['ScanRequest']
 users_collection = db['Users']
 invitations_collection = db['Invitations']
 

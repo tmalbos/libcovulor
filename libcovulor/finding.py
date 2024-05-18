@@ -21,7 +21,8 @@ class Finding:
     EXCLUDED_FILE_TYPES = 'excluded_file_types'
     FILE = 'file_path'
     FIXING_EFFORT = 'effort_for_fixing'
-    ID = 'uri'
+    IAC = 'iac'
+    ID = 'finding_id'
     IMPACT = 'impact'
     IS_DUPLICATE = 'duplicate'
     IS_FALSE_POSITIVE = 'is_false_positive'
@@ -66,7 +67,7 @@ class Finding:
     def create(data: dict):
         try:
             existing_document = findings_collection.find_one({
-                    Finding.CWES: data[Finding.CWES],
+                    Finding.CWES: data.get(Finding.CWES, []),
                     Finding.FILE: data[Finding.FILE],
                     Finding.ORIGINAL_LINE: data[Finding.ORIGINAL_LINE],
                     Finding.TOOL: data[Finding.TOOL]
@@ -81,9 +82,10 @@ class Finding:
                 del data["_id"]
 
             data[Finding.PROCESSING_STATUS] = "processing"
-            finding = findings_collection.insert_one(data)
+            finding_model = FindingModel.parse_obj(data)
+            finding = findings_collection.insert_one(finding_model)
 
-            return {"id": str(finding.inserted_id), Finding.IS_DUPLICATE: data[Finding.IS_DUPLICATE]} if finding.inserted_id else None
+            return FindingModel.parse_obj(finding)
         except PyMongoError as e:
             print(f'Error: {e}')
 
@@ -139,6 +141,7 @@ class FindingModel(BaseModel):
     excluded_file_types: list = Field(default=[], alias=Finding.EXCLUDED_FILE_TYPES)
     file: str = Field(alias=Finding.FILE)
     fixing_effort: Optional[str] = Field(default=None, alias=Finding.FIXING_EFFORT)
+    iac: Optional[str] = Field(default=None, alias=Finding.IAC)
     id: str = Field(alias=Finding.ID)
     impact: Optional[str] = Field(default=None, alias=Finding.IMPACT)
     is_duplicate: bool = Field(default=False, alias=Finding.IS_DUPLICATE)
@@ -158,7 +161,7 @@ class FindingModel(BaseModel):
     record_source: Optional[str] = Field(default=None, alias=Finding.RECORD_SOURCE)
     references: list = Field(default=[], alias=Finding.REFERENCES)
     remediation_type: Optional[str] = Field(default=None, alias=Finding.REMEDIATION_TYPE)
-    repository_id: Optional[str] = Field(default=None, alias=Finding.REPOSITORY_ID)
+    repository_id: str = Field(alias=Finding.REPOSITORY_ID)
     resource_entity: Optional[str] = Field(default=None, alias=Finding.RESOURCE_ENTITY)
     review_requested_by: Optional[str] = Field(default=None, alias=Finding.REVIEW_REQUESTED_BY)
     sast_sink_object: Optional[str] = Field(default=None, alias=Finding.SAST_SINK_OBJECT)
@@ -170,12 +173,12 @@ class FindingModel(BaseModel):
     scanner_report_code: Optional[str] = Field(default=None, alias=Finding.SCANNER_REPORT_CODE)
     scanner_weakness: Optional[str] = Field(default=None, alias=Finding.SCANNER_WEAKNESS)
     service: Optional[str] = Field(default=None, alias=Finding.SERVICE)
-    severity: Optional[str] = Field(default=None, alias=Finding.SEVERITY)
+    severity: str = Field(alias=Finding.SEVERITY)
     slsa_threats: list = Field(default=[], alias=Finding.SLSA_THREATS)
     status: str = Field(default='In Progress', alias=Finding.STATUS)
-    supply_chains: list = Field(default=[], alias=Finding.SUPPLY_CHAINS)
+    supply_chains: list = Field(default=['Source Code'], alias=Finding.SUPPLY_CHAINS)
     tags: list = Field(default=[], alias=Finding.TAGS)
     target_file_types: list = Field(default=[], alias=Finding.TARGET_FILE_TYPES)
-    title: Optional[str] = Field(default=None, alias=Finding.TITLE)
-    tool: Optional[str] = Field(default=None, alias=Finding.TOOL)
+    title: str = Field(alias=Finding.TITLE)
+    tool: str = Field(alias=Finding.TOOL)
     type: str = Field(default='Code Weakness', alias=Finding.TYPE)
