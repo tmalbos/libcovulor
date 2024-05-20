@@ -3,6 +3,15 @@ from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 from typing import Optional
 
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    datefmt='%a, %d %b %Y %H:%M:%S',
+    filemode='a')
+
 class Finding:
     ACCESS_CREDENTIAL = 'access_credential'
     ACTUAL_LINE = 'line'
@@ -66,12 +75,16 @@ class Finding:
     @staticmethod
     def create(data: dict):
         try:
+            logging.info(f"Insert Data: {data}")
+
             existing_document = findings_collection.find_one({
                     Finding.CWES: data.get(Finding.CWES, []),
                     Finding.FILE: data[Finding.FILE],
                     Finding.ORIGINAL_LINE: data[Finding.ORIGINAL_LINE],
                     Finding.TOOL: data[Finding.TOOL]
             })
+
+            logging.info(f"Existing Document: {existing_document}")
 
             if existing_document:
                 actual_title = data[Finding.TITLE]
@@ -82,10 +95,25 @@ class Finding:
                 del data["_id"]
 
             data[Finding.PROCESSING_STATUS] = "processing"
-            finding_model = FindingModel.parse_obj(data)
-            finding = findings_collection.insert_one(finding_model.model_dump())
 
-            return FindingModel.parse_obj(finding)
+            logging.info(f"Processed Data: {data}")
+
+            finding_model = FindingModel.parse_obj(data)
+
+            logging.info(f"Finding Model: {finding_model}")
+
+            finding = findings_collection.insert_one(finding_model.model_dump(by_alias=True))
+
+            logging.info(f"Inserted Finding: {finding}")
+
+            if not finding.inserted_id:
+                return None
+
+            finding_model = Finding.find_one(data[Finding.CLIENT_ID], str(finding.inserted_id))
+
+            logging.info(f"Final Finding Model: {finding_model}")
+
+            return finding_model
         except PyMongoError as e:
             print(f'Error: {e}')
 
