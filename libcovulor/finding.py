@@ -1,16 +1,7 @@
-from .database import delete_one, find_many, find_one, findings_collection, update_one
+from .database import Database
 from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 from typing import Optional
-
-import logging
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    datefmt='%a, %d %b %Y %H:%M:%S',
-    filemode='a')
 
 class Finding:
     ACCESS_CREDENTIAL = 'access_credential'
@@ -26,6 +17,7 @@ class Finding:
     DATE = 'date'
     DESCRIPTION = 'description'
     DUPLICATE_ID = 'duplicate_finding_id'
+    END_COLUMN = 'end_column'
     EPSS = 'estimated_epss'
     EXCLUDED_FILE_TYPES = 'excluded_file_types'
     FILE = 'file_path'
@@ -37,6 +29,7 @@ class Finding:
     IS_FALSE_POSITIVE = 'is_false_positive'
     IS_MITIGATED_EXTERNALLY = 'is_mitigated_externally'
     ISSUE_OWNER = 'issue_owner'
+    LANGUAGE = 'language'
     LIKELIHOOD = 'likelihood'
     MITIGATION = 'mitigation'
     NOTES = 'notes'
@@ -64,6 +57,7 @@ class Finding:
     SERVICE = 'service'
     SEVERITY = 'severity'
     SLSA_THREATS = 'slsa_threats'
+    START_COLUMN = 'start_column'
     STATUS = 'status'
     SUPPLY_CHAINS = 'supply_chains'
     TAGS = 'tags'
@@ -71,20 +65,19 @@ class Finding:
     TITLE = 'title'
     TOOL = 'tool'
     TYPE = 'vuln_type'
+    NB_OCCURRENCES = 'nb_occurrences'
 
-    @staticmethod
-    def create(data: dict):
+    def __init__(self, mongodb_server: str = "mongodb://mongodb", port: int = 27017, db_name: str = "plexicus"):
+        self.db = Database(mongodb_server, port, db_name)
+
+    def create(self, data: dict):
         try:
-            logging.info(f"Insert Data: {data}")
-
-            existing_document = findings_collection.find_one({
+            existing_document = self.db.findings_collection.find_one({
                     Finding.CWES: data.get(Finding.CWES, []),
                     Finding.FILE: data[Finding.FILE],
                     Finding.ORIGINAL_LINE: data[Finding.ORIGINAL_LINE],
                     Finding.TOOL: data[Finding.TOOL]
             })
-
-            logging.info(f"Existing Document: {existing_document}")
 
             if existing_document:
                 actual_title = data[Finding.TITLE]
@@ -95,23 +88,13 @@ class Finding:
                 del data["_id"]
 
             data[Finding.PROCESSING_STATUS] = "processing"
-
-            logging.info(f"Processed Data: {data}")
-
             finding_model = FindingModel.parse_obj(data)
-
-            logging.info(f"Finding Model: {finding_model}")
-
-            finding = findings_collection.insert_one(finding_model.model_dump(by_alias=True))
-
-            logging.info(f"Inserted Finding: {finding}")
+            finding = self.db.findings_collection.insert_one(finding_model.model_dump(by_alias=True))
 
             if not finding.inserted_id:
                 return None
 
-            finding_model = Finding.find_one(data[Finding.CLIENT_ID], str(finding.inserted_id))
-
-            logging.info(f"Final Finding Model: {finding_model}")
+            finding_model.object_id = str(finding.inserted_id)
 
             return finding_model
         except PyMongoError as e:
@@ -119,15 +102,18 @@ class Finding:
 
             return None
 
-    @staticmethod
-    def delete(client_id: str, finding_id: str):
-        dict_finding = delete_one(findings_collection, client_id, finding_id)
+    def delete(self, client_id: str, finding_id: str):
+        dict_finding = self.db.delete_one(self.db.findings_collection, client_id, finding_id)
 
         return FindingModel.parse_obj(dict_finding)
+    
+    def delete_many(self, client_id: str, options: dict = None):
+        dict_finding = self.db.delete_many(self.db.findings_collection, client_id, options)
 
-    @staticmethod
-    def find_many(client_id: str, options: dict = None):
-        findings = find_many(findings_collection, client_id, options)
+        return dict_finding
+
+    def find_many(self, client_id: str, options: dict = None):
+        findings = self.db.find_many(self.db.findings_collection, client_id, options)
         model_data = []
 
         for finding in findings['data']:
@@ -138,20 +124,18 @@ class Finding:
 
         return findings
 
-    @staticmethod
-    def find_one(client_id: str, finding_id: str):
-        dict_finding = find_one(findings_collection, client_id, finding_id)
+    def find_one(self, client_id: str, finding_id: str):
+        dict_finding = self.db.find_one(self.db.findings_collection, client_id, finding_id)
 
         return FindingModel.parse_obj(dict_finding)
 
-    @staticmethod
-    def update(client_id: str, finding_id: str, data: dict):
-        dict_finding = update_one(findings_collection, client_id, finding_id, data)
+    def update(self, client_id: str, finding_id: str, data: dict):
+        dict_finding = self.db.update_one(self.db.findings_collection, client_id, finding_id, data)
 
         return FindingModel.parse_obj(dict_finding)
 
 class FindingModel(BaseModel):
-    object_id: str = Field(exclude=True, alias='_id')
+    object_id: Optional[str] = Field(default=None, exclude=True, alias='_id')
     access_credential: Optional[str] = Field(default=None, alias=Finding.ACCESS_CREDENTIAL)
     actual_line: int = Field(ge=1, alias=Finding.ACTUAL_LINE)
     asvs_id: Optional[str] = Field(default=None, alias=Finding.ASVS_ID)
@@ -165,6 +149,7 @@ class FindingModel(BaseModel):
     date: str = Field(pattern=r'\d{4}-\d{2}-\d{2}', alias=Finding.DATE)
     description: str = Field(alias=Finding.DESCRIPTION)
     duplicate_id: Optional[str] = Field(default=None, alias=Finding.DUPLICATE_ID)
+    end_column: Optional[int] = Field(default=1, ge=0, alias=Finding.END_COLUMN)
     epss: int = Field(default=0, alias=Finding.EPSS)
     excluded_file_types: list = Field(default=[], alias=Finding.EXCLUDED_FILE_TYPES)
     file: str = Field(alias=Finding.FILE)
@@ -176,8 +161,10 @@ class FindingModel(BaseModel):
     is_false_positive: bool = Field(default=False, alias=Finding.IS_FALSE_POSITIVE)
     is_mitigated_externally: bool = Field(default=False, alias=Finding.IS_MITIGATED_EXTERNALLY)
     issue_owner: Optional[str] = Field(default=None, alias=Finding.ISSUE_OWNER)
+    language: Optional[str] = Field(default=None, alias=Finding.LANGUAGE)
     likelihood: Optional[str] = Field(default=None, alias=Finding.LIKELIHOOD)
     mitigation: Optional[str] = Field(default=None, alias=Finding.MITIGATION)
+    nb_occurrences: Optional[int] = Field(default=None, alias=Finding.NB_OCCURRENCES)
     notes: list = Field(default=[], alias=Finding.NOTES)
     numerical_severity: int = Field(default=0, ge=0, le=100, alias=Finding.NUMERICAL_SEVERITY)
     original_line: int = Field(ge=1, alias=Finding.ORIGINAL_LINE)
@@ -203,6 +190,7 @@ class FindingModel(BaseModel):
     service: Optional[str] = Field(default=None, alias=Finding.SERVICE)
     severity: str = Field(alias=Finding.SEVERITY)
     slsa_threats: list = Field(default=[], alias=Finding.SLSA_THREATS)
+    start_column: Optional[int] = Field(default=1, ge=0, alias=Finding.START_COLUMN)
     status: str = Field(default='In Progress', alias=Finding.STATUS)
     supply_chains: list = Field(default=['Source Code'], alias=Finding.SUPPLY_CHAINS)
     tags: list = Field(default=[], alias=Finding.TAGS)

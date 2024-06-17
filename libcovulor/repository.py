@@ -1,10 +1,9 @@
-from .database import delete_one, find_many, find_one, repositories_collection, update_one
+from .database import Database
 from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 
 class Repository:
     ACTIVE = 'active'
-    AUTH = 'repository_auth'
     BRANCH = 'repository_branch'
     CLIENT_ID = 'client_id'
     DESCRIPTION = 'description'
@@ -20,10 +19,12 @@ class Repository:
     TYPE = 'repository_type'
     URL = 'url'
 
-    @staticmethod
-    def create(data: dict):
+    def __init__(self, mongodb_server: str = "mongodb://mongodb", port: int = 27017, db_name: str = "plexicus"):
+        self.db = Database(mongodb_server, port, db_name)
+
+    def create(self, data: dict):
         try:
-            existing_document = repositories_collection.find_one({Repository.URL: data["uri"]})
+            existing_document = self.db.repositories_collection.find_one({Repository.URL: data["uri"]})
 
             if existing_document:
                 return None
@@ -38,14 +39,13 @@ class Repository:
                 Repository.TICKET_AUTH: None,
                 Repository.TICKET_API_URL: None,
                 Repository.DESCRIPTION: data[Repository.DESCRIPTION],
-                Repository.AUTH: data['github_oauth_token'],
                 Repository.PROCESSING_STATUS: "processing",
                 Repository.BRANCH: data["data"]["git_connection"]["repo_branch"],
                 Repository.SOURCE_CONTROL: data[Repository.SOURCE_CONTROL],
                 Repository.PRIORITY: data[Repository.PRIORITY],
                 Repository.TAGS: data[Repository.TAGS]
             }
-            repository = repositories_collection.insert_one(repo_document)
+            repository = self.db.repositories_collection.insert_one(repo_document)
 
             return str(repository.inserted_id) if repository.inserted_id else None
         except PyMongoError as e:
@@ -53,15 +53,18 @@ class Repository:
 
             return None
 
-    @staticmethod
-    def delete(client_id: str, repository_id: str):
-        dict_repository = delete_one(repositories_collection, client_id, repository_id)
+    def delete(self, client_id: str, repository_id: str):
+        dict_repository = self.db.delete_one(self.db.repositories_collection, client_id, repository_id)
         # return RepositoryModel.parse_obj(dict_repository)
         return dict_repository
 
-    @staticmethod
-    def find_many(client_id: str, options: dict = None):
-        repositories = find_many(repositories_collection, client_id, options)
+    def delete_many(self, client_id: str, options: dict = None):
+        dict_finding = self.db.delete_many(self.db.repositories_collection, client_id, options)
+
+        return dict_finding
+
+    def find_many(self, client_id: str, options: dict = None):
+        repositories = self.db.find_many(self.db.repositories_collection, client_id, options)
         model_data = []
 
         for repo in repositories['data']:
@@ -73,15 +76,13 @@ class Repository:
 
         return repositories
 
-    @staticmethod
-    def find_one(client_id: str, repository_id: str):
-        dict_repository = find_one(repositories_collection, client_id, repository_id)
+    def find_one(self, client_id: str, repository_id: str):
+        dict_repository = self.db.find_one(self.db.repositories_collection, client_id, repository_id)
         # return RepositoryModel.parse_obj(dict_repository)
         return dict_repository
 
-    @staticmethod
-    def update(client_id: str, repository_id: str, data: dict):
-        dict_repository = update_one(repositories_collection, client_id, repository_id, data)
+    def update(self, client_id: str, repository_id: str, data: dict):
+        dict_repository = self.db.update_one(self.db.repositories_collection, client_id, repository_id, data)
         # return RepositoryModel.parse_obj(dict_finding)
         return dict_repository
 
