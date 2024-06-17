@@ -1,8 +1,9 @@
 from .database import Database
-from datetime import datetime
 from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 from typing import Optional
+
+import datetime
 
 class Finding:
     ACCESS_CREDENTIAL = 'access_credential'
@@ -147,7 +148,7 @@ class FindingModel(BaseModel):
     cvssv3_vector: list = Field(default=[], alias=Finding.CVSSV3_VECTOR)
     cwes: list = Field(default=[], alias=Finding.CWES)
     data_source: Optional[str] = Field(default=None, alias=Finding.DATA_SOURCE)
-    date: datetime = Field(alias=Finding.DATE)
+    date: datetime.datetime = Field(alias=Finding.DATE)
     description: str = Field(alias=Finding.DESCRIPTION)
     duplicate_id: Optional[str] = Field(default=None, alias=Finding.DUPLICATE_ID)
     end_column: Optional[int] = Field(default=1, ge=0, alias=Finding.END_COLUMN)
