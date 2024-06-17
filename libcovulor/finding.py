@@ -200,3 +200,6 @@ class FindingModel(BaseModel):
     title: str = Field(alias=Finding.TITLE)
     tool: str = Field(alias=Finding.TOOL)
     type: str = Field(default='Code Weakness', alias=Finding.TYPE)
+
+    class Config:
+        arbitrary_types_allowed = True
