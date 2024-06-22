@@ -1,8 +1,8 @@
 from .database import Database, MongoDBClient
+from datetime import datetime
 from pydantic import BaseModel, Field
 from pymongo.errors import PyMongoError
 from typing import Optional
-
 
 class Finding:
     ACCESS_CREDENTIAL = 'access_credential'
@@ -157,7 +157,7 @@ class FindingModel(BaseModel):
     cvssv3_vector: list = Field(default=[], alias=Finding.CVSSV3_VECTOR)
     cwes: list = Field(default=[], alias=Finding.CWES)
     data_source: Optional[str] = Field(default=None, alias=Finding.DATA_SOURCE)
-    date: str = Field(pattern=r'\d{4}-\d{2}-\d{2}', alias=Finding.DATE)
+    date: datetime = Field(alias=Finding.DATE)
     description: str = Field(alias=Finding.DESCRIPTION)
     duplicate_id: Optional[str] = Field(default=None, alias=Finding.DUPLICATE_ID)
     end_column: Optional[int] = Field(default=1, ge=0, alias=Finding.END_COLUMN)
@@ -214,3 +214,6 @@ class FindingModel(BaseModel):
     tool: str = Field(alias=Finding.TOOL)
     type: str = Field(default='Code Weakness', alias=Finding.TYPE)
     wasc: Optional[str] = Field(default=None, alias=Finding.WASC)
+
+    class Config:
+        arbitrary_types_allowed = True
