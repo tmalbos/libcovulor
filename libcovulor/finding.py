@@ -7,25 +7,29 @@ from typing import Optional
 class Finding:
     ACCESS_CREDENTIAL = 'access_credential'
     ACTUAL_LINE = 'line'
+    AGGREGATED = 'aggregated'
     ASVS_ID = 'asvs_id'
     ASVS_SECTION = 'asvs_section'
+    CATEGORY = 'category'
     CLIENT_ID = 'client_id'
     CONFIDENCE = 'confidence'
     CVE = 'cve'
     CVSSV3_SCORE = 'cvssv3_score'
     CVSSV3_VECTOR = 'cvssv3_vector'
-    CWES = 'cwe'
+    CWE = 'cwe'
     DATA_SOURCE = 'data_source'
     DATE = 'date'
     DESCRIPTION = 'description'
+    DEVELOPER_IDS = 'developer_ids'
     DUPLICATE_ID = 'duplicate_finding_id'
     END_COLUMN = 'end_column'
     EPSS = 'estimated_epss'
     EXCLUDED_FILE_TYPES = 'excluded_file_types'
     EXPLOITABILITY = 'exploitability'
+    EXTRA_CWE = 'extra_cwe'
+    FALSE_POSITIVE_TYPE = 'fp_type'
     FILE = 'file_path'
     FIXING_EFFORT = 'effort_for_fixing'
-    IAC = 'iac'
     ID = 'finding_id'
     IMPACT = 'impact'
     IS_DUPLICATE = 'duplicate'
@@ -44,6 +48,7 @@ class Finding:
     POLICY_CONTROL = 'policy_control'
     POLICY_DESCRIPTION = 'policy_description'
     POLICY_NAME = 'policy_name'
+    POLICY_RULES = 'policy_rules'
     PRIORITY = 'prioritization_value'
     PROCESSING_STATUS = 'processing_status'
     PROVIDER = 'provider'
@@ -63,66 +68,56 @@ class Finding:
     SCANNER_WEAKNESS = 'scanner_weakness'
     SERVICE = 'service'
     SEVERITY = 'severity'
+    SINGLE_LINE_CODE = 'single_line_code'
     SLSA_THREATS = 'slsa_threats'
     START_COLUMN = 'start_column'
     STATUS = 'status'
-    SUPPLY_CHAINS = 'supply_chains'
     TAGS = 'tags'
     TARGET_FILE_TYPES = 'target_file_types'
     TITLE = 'title'
     TOOL = 'tool'
-    TYPE = 'vuln_type'
+    TYPE = 'type'
     WASC = 'wasc'
 
-    def __init__(self, mongodb_server: str = "mongodb://mongodb", port: int = 27017, db_name: str = "plexicus"):
-        self.db = Database(mongodb_server, port, db_name)
-        self.mongo = MongoDBClient(mongodb_server, port, db_name)
+    STATUS_NEW = 'new'
+    STATUS_ENRICHED = 'enriched'
+    STATUS_READY = 'ready'
+    STATUS_SOLVED = 'solved'
+    STATUS_ISSUED = 'issued'
 
-    def create(self, data: dict):
-        try:
-            with self.mongo:
-                existing_document = self.mongo.get_collection(self.db.findings_collection).find_one({
-                    Finding.CWES: data.get(Finding.CWES, []),
-                    Finding.FILE: data[Finding.FILE],
-                    Finding.ORIGINAL_LINE: data[Finding.ORIGINAL_LINE],
-                    Finding.TOOL: data[Finding.TOOL]
-                })
+    def __init__(self, database_username=None, database_password=None, database_host="mongodb", port: int = 27017, database_options=None, db_name="plexicus"):
+        self.db = Database(database_username, database_password, database_host, port, database_options, db_name)
+        self.db_username = database_username
+        self.db_password = database_password
+        self.db_host = database_host
+        self.db_port = port
+        self.db_options = database_options
+        self.db_name = db_name
 
-                if existing_document:
-                    actual_title = data[Finding.TITLE]
-                    data.update(existing_document)
-                    data[Finding.TITLE] = actual_title
-                    data[Finding.IS_DUPLICATE] = True
-                    data[Finding.DUPLICATE_ID] = str(existing_document["_id"])
-                    del data["_id"]
+    async def create(self, data: dict):
+        data[Finding.PROCESSING_STATUS] = "processing"
+        finding_model = FindingModel.parse_obj(data)
+        finding = await self.db.insert_one(self.db.findings_collection, finding_model.model_dump(by_alias=True))
 
-                data[Finding.PROCESSING_STATUS] = "processing"
-                finding_model = FindingModel.parse_obj(data)
-                finding = self.mongo.get_collection(self.db.findings_collection).insert_one(finding_model.model_dump(by_alias=True))
-
-                if not finding.inserted_id:
-                    return None
-
-                finding_model.object_id = str(finding.inserted_id)
-
-                return finding_model
-        except PyMongoError as e:
-            print(f'Error: {e}')
-
+        if not finding:
             return None
 
-    def delete(self, client_id: str, finding_id: str):
-        dict_finding = self.db.delete_one(self.db.findings_collection, client_id, finding_id)
+        finding_model.object_id = finding
+
+        return finding_model
+
+    async def delete(self, client_id: str, finding_id: str):
+        dict_finding = await self.db.delete_one(self.db.findings_collection, client_id, finding_id)
 
         return FindingModel.parse_obj(dict_finding)
 
-    def delete_many(self, client_id: str, options: dict = None):
-        dict_finding = self.db.delete_many(self.db.findings_collection, client_id, options)
+    async def delete_many(self, client_id: str, options: dict = None):
+        dict_finding = await self.db.delete_many(self.db.findings_collection, client_id, options)
 
         return dict_finding
 
-    def find_many(self, client_id: str, options: dict = None):
-        findings = self.db.find_many(self.db.findings_collection, client_id, options)
+    async def find_many(self, client_id: str, options: dict = None):
+        findings = await self.db.find_many(self.db.findings_collection, client_id, options)
         model_data = []
 
         for finding in findings['data']:
@@ -133,40 +128,43 @@ class Finding:
 
         return findings
 
-    def find_one(self, client_id: str, finding_id: str):
-        dict_finding = self.db.find_one(self.db.findings_collection, client_id, finding_id)
+    async def find_one(self, client_id: str, finding_id: str):
+        dict_finding = await self.db.find_one(self.db.findings_collection, client_id, finding_id)
 
         return FindingModel.parse_obj(dict_finding)
 
-    def update(self, client_id: str, finding_id: str, data: dict):
-        dict_finding = self.db.update_one(self.db.findings_collection, client_id, finding_id, data)
+    async def update(self, client_id: str, finding_id: str, data: dict):
+        dict_finding = await self.db.update_one(self.db.findings_collection, client_id, finding_id, data)
 
         return FindingModel.parse_obj(dict_finding)
-
 
 class FindingModel(BaseModel):
     object_id: Optional[str] = Field(default=None, exclude=True, alias='_id')
-    access_credential: Optional[str] = Field(default=None, alias=Finding.ACCESS_CREDENTIAL)
-    actual_line: int = Field(ge=1, alias=Finding.ACTUAL_LINE)
+    access_credential: bool = Field(default=False, alias=Finding.ACCESS_CREDENTIAL)
+    actual_line: int = Field(ge=0, alias=Finding.ACTUAL_LINE)
+    aggregated: bool = Field(default=False, alias=Finding.AGGREGATED)
     asvs_id: Optional[str] = Field(default=None, alias=Finding.ASVS_ID)
     asvs_section: Optional[str] = Field(default=None, alias=Finding.ASVS_SECTION)
+    category: str = Field(default='Code Security', alias=Finding.CATEGORY)
     client_id: str = Field(alias=Finding.CLIENT_ID)
-    confidence: int = Field(default=100, ge=0, le=100, alias=Finding.CONFIDENCE)
+    confidence: int = Field(default=50, ge=0, le=100, alias=Finding.CONFIDENCE)
     cve: Optional[str] = Field(default=None, alias=Finding.CVE)
     cvssv3_score: float = Field(default=0.0, ge=0.0, alias=Finding.CVSSV3_SCORE)
     cvssv3_vector: list = Field(default=[], alias=Finding.CVSSV3_VECTOR)
-    cwes: list = Field(default=[], alias=Finding.CWES)
+    cwe: Optional[int] = Field(default=None, alias=Finding.CWE)
     data_source: Optional[str] = Field(default=None, alias=Finding.DATA_SOURCE)
     date: datetime = Field(alias=Finding.DATE)
     description: str = Field(alias=Finding.DESCRIPTION)
+    developer_ids: list = Field(default=[], alias=Finding.DEVELOPER_IDS)
     duplicate_id: Optional[str] = Field(default=None, alias=Finding.DUPLICATE_ID)
     end_column: Optional[int] = Field(default=1, ge=0, alias=Finding.END_COLUMN)
-    epss: int = Field(default=0, alias=Finding.EPSS)
+    epss: float = Field(default=0, alias=Finding.EPSS)
     excluded_file_types: list = Field(default=[], alias=Finding.EXCLUDED_FILE_TYPES)
     exploitability: Optional[str] = Field(default=None, alias=Finding.EXPLOITABILITY)
+    extra_cwe: Optional[list] = Field(default=[], alias=Finding.EXTRA_CWE)
+    false_positive_type: Optional[str] = Field(default=None, alias=Finding.FALSE_POSITIVE_TYPE)
     file: str = Field(alias=Finding.FILE)
     fixing_effort: Optional[str] = Field(default=None, alias=Finding.FIXING_EFFORT)
-    iac: Optional[str] = Field(default=None, alias=Finding.IAC)
     id: str = Field(alias=Finding.ID)
     impact: Optional[str] = Field(default=None, alias=Finding.IMPACT)
     is_duplicate: bool = Field(default=False, alias=Finding.IS_DUPLICATE)
@@ -179,12 +177,10 @@ class FindingModel(BaseModel):
     nb_occurrences: Optional[int] = Field(default=None, alias=Finding.NB_OCCURRENCES)
     notes: list = Field(default=[], alias=Finding.NOTES)
     numerical_severity: int = Field(default=0, ge=0, le=100, alias=Finding.NUMERICAL_SEVERITY)
-    original_line: int = Field(ge=1, alias=Finding.ORIGINAL_LINE)
+    original_line: int = Field(ge=0, alias=Finding.ORIGINAL_LINE)
     owasps: list = Field(default=[], alias=Finding.OWASPS)
     platform: Optional[str] = Field(default=None, alias=Finding.PLATFORM)
-    policy_control: Optional[str] = Field(default=None, alias=Finding.POLICY_CONTROL)
-    policy_description: Optional[str] = Field(default=None, alias=Finding.POLICY_DESCRIPTION)
-    policy_name: Optional[str] = Field(default=None, alias=Finding.POLICY_NAME)
+    policy_rules: list = Field(default=[], alias=Finding.POLICY_RULES)
     priority: int = Field(default=0, ge=0, le=100, alias=Finding.PRIORITY)
     processing_status: str = Field(default='processing', alias=Finding.PROCESSING_STATUS)
     provider: Optional[str] = Field(default=None, alias=Finding.PROVIDER)
@@ -204,15 +200,15 @@ class FindingModel(BaseModel):
     scanner_weakness: Optional[str] = Field(default=None, alias=Finding.SCANNER_WEAKNESS)
     service: Optional[str] = Field(default=None, alias=Finding.SERVICE)
     severity: str = Field(alias=Finding.SEVERITY)
+    single_line_code: Optional[str] = Field(default=None, alias=Finding.SINGLE_LINE_CODE)
     slsa_threats: list = Field(default=[], alias=Finding.SLSA_THREATS)
     start_column: Optional[int] = Field(default=1, ge=0, alias=Finding.START_COLUMN)
-    status: str = Field(default='In Progress', alias=Finding.STATUS)
-    supply_chains: list = Field(default=['Source Code'], alias=Finding.SUPPLY_CHAINS)
+    status: str = Field(default=Finding.STATUS_NEW, alias=Finding.STATUS)
     tags: list = Field(default=[], alias=Finding.TAGS)
     target_file_types: list = Field(default=[], alias=Finding.TARGET_FILE_TYPES)
     title: str = Field(alias=Finding.TITLE)
     tool: str = Field(alias=Finding.TOOL)
-    type: str = Field(default='Code Weakness', alias=Finding.TYPE)
+    type: str = Field(default='SAST', alias=Finding.TYPE)
     wasc: Optional[str] = Field(default=None, alias=Finding.WASC)
 
     class Config:

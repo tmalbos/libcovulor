@@ -9,12 +9,15 @@ with open('README.md', 'r', encoding='utf-8') as fh:
 
 setup(
     name='libcovulor',
-    version='0.1',
+    version='1.4.0.0',
     packages=find_packages(),
     install_requires=[
-        'pymongo==4.6.2',
+        'motor==3.5.1',
+        'openai==1.46.0',
+        'pymongo==4.6.3',
         'pydantic==2.6.4',
         'pydantic_core==2.16.3',
+        'pytest-asyncio',
         'pytest==8.2.1',
         'pytest-mock==3.14.0'
     ],
