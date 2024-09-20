@@ -4,10 +4,10 @@ from pydantic import BaseModel
 def send_message(openai_data: dict, prompt_input: str, prompt_system_message: str, response_model: type[BaseModel]) -> dict:
     print(f"Inside the send_message function")
 
-    api_key = openai_data.get("openai_api_key")
-    api_base = openai_data.get("openai_base_url")
-    api_version = openai_data.get("openai_version")
-    deployment_name = openai_data.get("openai_deployment_name")
+    api_key = openai_data.get("api_key")
+    api_base = openai_data.get("api_base")
+    api_version = openai_data.get("api_version")
+    deployment_name = openai_data.get("deployment_name")
 
     if api_version:
         print(f"We have an API version, and so we are in Azure")
