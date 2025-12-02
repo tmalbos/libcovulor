@@ -1,0 +1,22 @@
+name: Upload SARIF to GitHub Security
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upload-sarif:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Save SARIF content to file
+        shell: bash
+        run: |
+          printf '%s' "${{ vars.SARIF_CONTENT }}" > results.sarif
+
+      - name: Upload SARIF results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif
+          category: ${{ vars.SARIF_CATEGORY || 'custom-scan' }}
