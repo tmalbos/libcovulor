@@ -1,0 +1,558 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "opengrep",
+          "organization": "Unknown",
+          "version": "1.0.0",
+          "rules": [
+            {
+              "id": "php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+              "name": "SQL Injection",
+              "shortDescription": {
+                "text": "SQL Injection"
+              },
+              "fullDescription": {
+                "text": "User-controllable data is incorporated directly into a SQL query string without safe parameterization or proper allowlist validation. An attacker can inject SQL commands that alter query logic to read, modify, or delete data, bypass authentication, or execute administrative operations on the database, exposing sensitive information and risking complete data compromise."
+              },
+              "help": {
+                "text": "User-controllable data is incorporated directly into a SQL query string without safe parameterization or proper allowlist validation. An attacker can inject SQL commands that alter query logic to read, modify, or delete data, bypass authentication, or execute administrative operations on the database, exposing sensitive information and risking complete data compromise.\n\nImpact:\nNo detailed impact information available.\n\nMitigation:\n## adaptations required:\nAdopt parameterized statements or prepared queries exclusively; never construct SQL by concatenating or interpolating raw input. Use the database's native parameter binding APIs or an ORM that enforces parameterization. Apply strict allowlist validation for any input that must influence query structure (for example column names or sort/order tokens) and reject everything else. Use least-privilege database credentials for application connections so successful injection cannot reach administrative operations. Treat stored procedures as safe only when they accept parameters and do not internally concatenate untrusted input. Centralize database access logic so policy and parameterization are enforced consistently. Ensure error messages do not leak database or query details to users.\n\n## Test and validate:\nCreate unit and integration test suites that execute queries with a representative set of malicious SQL payloads to assert that no injection is possible and that results/error states are safe. Include automated SAST rules for detection of string-concatenated SQL and require fixes before merge. Run DAST scans against deployed app endpoints using SQL injection payloads and verify that responses do not expose data. Add regression tests to detect accidental reintroduction. Validate that the database role used by the app cannot drop/modify schema or access unrelated databases.",
+                "markdown": "# SQL Injection\n## Description\nUser-controllable data is incorporated directly into a SQL query string without safe parameterization or proper allowlist validation. An attacker can inject SQL commands that alter query logic to read, modify, or delete data, bypass authentication, or execute administrative operations on the database, exposing sensitive information and risking complete data compromise.\n## Impact\nNo detailed impact information available.\n## Mitigation\n## adaptations required:\nAdopt parameterized statements or prepared queries exclusively; never construct SQL by concatenating or interpolating raw input. Use the database's native parameter binding APIs or an ORM that enforces parameterization. Apply strict allowlist validation for any input that must influence query structure (for example column names or sort/order tokens) and reject everything else. Use least-privilege database credentials for application connections so successful injection cannot reach administrative operations. Treat stored procedures as safe only when they accept parameters and do not internally concatenate untrusted input. Centralize database access logic so policy and parameterization are enforced consistently. Ensure error messages do not leak database or query details to users.\n\n## Test and validate:\nCreate unit and integration test suites that execute queries with a representative set of malicious SQL payloads to assert that no injection is possible and that results/error states are safe. Include automated SAST rules for detection of string-concatenated SQL and require fixes before merge. Run DAST scans against deployed app endpoints using SQL injection payloads and verify that responses do not expose data. Add regression tests to detect accidental reintroduction. Validate that the database role used by the app cannot drop/modify schema or access unrelated databases.\n## References\n* https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html\n* https://owasp.org/www-community/attacks/SQL_Injection\n* https://cwe.mitre.org/data/definitions/89.html\n* https://owasp.org/Top10/\n* https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final\n* https://www.pcisecuritystandards.org/\n"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "Injection",
+                  "SQL",
+                  "SAST",
+                  "OWASP",
+                  "CWE-89"
+                ],
+                "precision": "medium",
+                "security-severity": "8.8",
+                "impact": 84,
+                "likelihood": "High",
+                "exploitability": 86,
+                "fixing_effort": 43,
+                "priority": 90,
+                "policy_rules": [
+                  {
+                    "policy_category": "Secure Development",
+                    "policy_control": "Requirement 6.5 - Address common coding vulnerabilities (e.g., injection)",
+                    "policy_description": "Specifically requires developers to address injection flaws and follow secure coding practices to protect cardholder data.",
+                    "policy_name": "PCI DSS"
+                  },
+                  {
+                    "policy_category": "Defense Contracting Security",
+                    "policy_control": "Secure SDLC and coding requirements at higher maturity levels",
+                    "policy_description": "Requires secure development and vulnerability management that prevent injection flaws at appropriate maturity levels.",
+                    "policy_name": "CMMC"
+                  },
+                  {
+                    "policy_category": "Controlled Unclassified Information Security",
+                    "policy_control": "3.14 System and Communications Protection / secure development guidance",
+                    "policy_description": "Includes development and testing expectations to protect controlled data from software vulnerabilities.",
+                    "policy_name": "NIST SP 800-171"
+                  },
+                  {
+                    "policy_category": "Secure Development",
+                    "policy_control": "SA-11 - Developer Security",
+                    "policy_description": "Directly addresses developer security practices and secure coding to prevent injection vulnerabilities.",
+                    "policy_name": "NIST 800-53r5"
+                  },
+                  {
+                    "policy_category": "Cloud Security",
+                    "policy_control": "Secure development and continuous monitoring requirements",
+                    "policy_description": "Requires secure development lifecycle and vulnerability management controls for cloud services.",
+                    "policy_name": "FedRAMP"
+                  },
+                  {
+                    "policy_category": "Information Security Management",
+                    "policy_control": "A.14.2 - System acquisition, development and maintenance (secure development)",
+                    "policy_description": "Explicitly requires secure development practices and controls that prevent introduction of vulnerabilities such as injection.",
+                    "policy_name": "ISO27001:2022"
+                  }
+                ],
+                "remediation_type": "pull_request",
+                "additional_references": [
+                  "https://owasp.org/www-community/attacks/SQL_Injection",
+                  "https://cwe.mitre.org/data/definitions/89.html",
+                  "https://owasp.org/Top10/",
+                  "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final",
+                  "https://www.pcisecuritystandards.org/"
+                ]
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-89",
+                    "toolComponent": {
+                      "name": "CWE",
+                      "guid": "TODO: Add CWE catalog GUID"
+                    }
+                  },
+                  "kinds": [
+                    "relevant"
+                  ]
+                },
+                {
+                  "target": {
+                    "id": "A03: Injection",
+                    "toolComponent": {
+                      "name": "OWASP",
+                      "guid": "TODO: Add OWASP catalog GUID"
+                    }
+                  },
+                  "kinds": [
+                    "relevant"
+                  ]
+                },
+                {
+                  "target": {
+                    "id": "WASC-19",
+                    "toolComponent": {
+                      "name": "WASC",
+                      "guid": "TODO: Add WASC catalog GUID"
+                    }
+                  },
+                  "kinds": [
+                    "relevant"
+                  ]
+                }
+              ],
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+            }
+          ],
+          "properties": {
+            "language": "php",
+            "category": "Application",
+            "platform": null,
+            "service": null
+          }
+        }
+      },
+      "results": [
+        {
+          "ruleId": "php.lang.security.injection.tainted-sql-string.tainted-sql-string",
+          "level": "error",
+          "message": {
+            "text": "User-controllable data is incorporated directly into a SQL query string without safe parameterization or proper allowlist validation. An attacker can inject SQL commands that alter query logic to read, modify, or delete data, bypass authentication, or execute administrative operations on the database, exposing sensitive information and risking complete data compromise."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "index.php",
+                  "uriBaseId": "%6925cb088dafad778e45bb7e%"
+                },
+                "region": {
+                  "startLine": 20,
+                  "startColumn": 12,
+                  "endColumn": 51
+                },
+                "contextRegion": {
+                  "startLine": 20,
+                  "endLine": 20,
+                  "snippet": {
+                    "text": "    $sql = \"SELECT * FROM usuarios WHERE id = $id\"; // Vulnerable a SQL Injection"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "-2494829000763929161"
+          },
+          "properties": {
+            "precision": "medium",
+            "security-severity": "8.8",
+            "status": "enriched",
+            "issue_owner": "tmalbos",
+            "developer_ids": [],
+            "is_false_positive": false,
+            "false_positive_type": null,
+            "is_mitigated_externally": false,
+            "is_duplicate": false,
+            "duplicate_finding_id": null,
+            "scan_id": "6925cb3ce8c6bb7b07e153aa",
+            "data_source": "plexalyzer",
+            "record_source": null,
+            "nb_occurrences": null,
+            "review_requested_by": null,
+            "epss": 0,
+            "cvssv3": {
+              "score": 9.8,
+              "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+            }
+          },
+          "fixes": [
+            {
+              "description": {
+                "text": "Suggested fix based on mitigation guidance"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "index.php"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 20,
+                        "startColumn": 12,
+                        "endColumn": 51
+                      },
+                      "insertedContent": {
+                        "text": "## adaptations required:\nAdopt parameterized statements or prepared queries exclusively; never construct SQL by concatenating or interpolating raw input. Use the database's native parameter binding APIs or an ORM that enforces parameterization. Apply strict allowlist validation for any input that must influence query structure (for example column names or sort/order tokens) and reject everything else. Use least-privilege database credentials for application connections so successful injection cannot reach administrative operations. Treat stored procedures as safe only when they accept parameters and do not internally concatenate untrusted input. Centralize database access logic so policy and parameterization are enforced consistently. Ensure error messages do not leak database or query details to users.\n\n## Test and validate:\nCreate unit and integration test suites that execute queries with a representative set of malicious SQL payloads to assert that no injection is possible and that results/error states are safe. Include automated SAST rules for detection of string-concatenated SQL and require fixes before merge. Run DAST scans against deployed app endpoints using SQL injection payloads and verify that responses do not expose data. Add regression tests to detect accidental reintroduction. Validate that the database role used by the app cannot drop/modify schema or access unrelated databases."
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "php.lang.security.injection.echoed-request.echoed-request",
+          "level": "warning",
+          "message": {
+            "text": "The code pattern echoes request-controlled data directly into application responses without context-aware encoding or validation, enabling reflected cross-site scripting. An attacker can craft a URL or request that causes a victim's browser to execute attacker-supplied script in the victim's security context, potentially leading to session theft, account takeover, unauthorized actions, or distribution of malware."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "index.php",
+                  "uriBaseId": "%6925cb088dafad778e45bb7e%"
+                },
+                "region": {
+                  "startLine": 36,
+                  "startColumn": 5,
+                  "endColumn": 32
+                },
+                "contextRegion": {
+                  "startLine": 36,
+                  "endLine": 36,
+                  "snippet": {
+                    "text": "    echo \"<div>$mensaje</div>\"; // Vulnerable a XSS"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "4257738751009527071"
+          },
+          "properties": {
+            "precision": "medium",
+            "security-severity": "7.6",
+            "status": "enriched",
+            "issue_owner": "tmalbos",
+            "developer_ids": [],
+            "is_false_positive": false,
+            "false_positive_type": null,
+            "is_mitigated_externally": false,
+            "is_duplicate": false,
+            "duplicate_finding_id": null,
+            "scan_id": "6925cb3ce8c6bb7b07e153aa",
+            "data_source": "plexalyzer",
+            "record_source": null,
+            "nb_occurrences": null,
+            "review_requested_by": null,
+            "epss": 0,
+            "cvssv3": {
+              "score": 8,
+              "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+            }
+          },
+          "fixes": [
+            {
+              "description": {
+                "text": "Suggested fix based on mitigation guidance"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "index.php"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 36,
+                        "startColumn": 5,
+                        "endColumn": 32
+                      },
+                      "insertedContent": {
+                        "text": "## adaptations required:\nApply context-sensitive output encoding for all data derived from requests before rendering it in responses. Implement a whitelist-based input validation strategy where feasible; reject or canonicalize unexpected input. Use templating or rendering frameworks that escape output by default instead of assembling HTML or JavaScript via string concatenation. Never serialize or inject raw request values into HTML, JavaScript, CSS, or URL contexts; use encoding functions appropriate to the specific output context (HTML body, HTML attribute, JavaScript, CSS, URL). Remove any patterns that dynamically evaluate strings (for example: eval-like behaviors, inline event handlers, or direct insertion into script blocks) and replace them with safe APIs that bind data to DOM nodes or use safe templating constructs. Apply the principle of least privilege to client-side effects: set cookies with HttpOnly and SameSite where appropriate so stolen cookies are less useful, and apply Content Security Policy (CSP) to restrict allowed script sources and reduce impact of injected scripts. Integrate secure-coding rules and static analysis into the build pipeline to flag direct echoes of request data, and add code review checklists that require context-aware encoding on every output. Educate developers on XSS attack scenarios, contexts where encoding differs, and the security implications of echoing user-controlled input.\n\n## Test and validate:\nAdd unit tests and automated integration tests that supply malicious payloads known to trigger XSS (payloads targeting HTML, attribute, JavaScript, CSS and URL contexts) and assert that responses contain properly encoded representations rather than executable script. Include regression tests that scan templating outputs and confirm the application of context-aware encoders. Configure SAST tools and pre-commit code scanners to detect patterns that directly output request data without encoding. Perform periodic dynamic testing (DAST) or manual penetration testing focused on reflected XSS vectors and verify CSP enforcement and cookie protections behave as expected."
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "php.lang.security.injection.echoed-request.echoed-request",
+          "level": "warning",
+          "message": {
+            "text": "The code pattern echoes request-controlled data directly into application responses without context-aware encoding or validation, enabling reflected cross-site scripting. An attacker can craft a URL or request that causes a victim's browser to execute attacker-supplied script in the victim's security context, potentially leading to session theft, account takeover, unauthorized actions, or distribution of malware."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "index.php",
+                  "uriBaseId": "%6925cb088dafad778e45bb7e%"
+                },
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 13,
+                  "endColumn": 78
+                },
+                "contextRegion": {
+                  "startLine": 25,
+                  "endLine": 25,
+                  "snippet": {
+                    "text": "            echo \"id: \" . $row[\"id\"]. \" - Nombre: \" . $row[\"nombre\"]. \"<br>\";"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "1831216357527710943"
+          },
+          "properties": {
+            "precision": "medium",
+            "security-severity": "7.6",
+            "status": "enriched",
+            "issue_owner": "tmalbos",
+            "developer_ids": [],
+            "is_false_positive": false,
+            "false_positive_type": null,
+            "is_mitigated_externally": false,
+            "is_duplicate": false,
+            "duplicate_finding_id": null,
+            "scan_id": "6925cb3ce8c6bb7b07e153aa",
+            "data_source": "plexalyzer",
+            "record_source": null,
+            "nb_occurrences": null,
+            "review_requested_by": null,
+            "epss": 0,
+            "cvssv3": {
+              "score": 8,
+              "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+            }
+          },
+          "fixes": [
+            {
+              "description": {
+                "text": "Suggested fix based on mitigation guidance"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "index.php"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 25,
+                        "startColumn": 13,
+                        "endColumn": 78
+                      },
+                      "insertedContent": {
+                        "text": "## adaptations required:\nApply context-sensitive output encoding for all data derived from requests before rendering it in responses. Implement a whitelist-based input validation strategy where feasible; reject or canonicalize unexpected input. Use templating or rendering frameworks that escape output by default instead of assembling HTML or JavaScript via string concatenation. Never serialize or inject raw request values into HTML, JavaScript, CSS, or URL contexts; use encoding functions appropriate to the specific output context (HTML body, HTML attribute, JavaScript, CSS, URL). Remove any patterns that dynamically evaluate strings (for example: eval-like behaviors, inline event handlers, or direct insertion into script blocks) and replace them with safe APIs that bind data to DOM nodes or use safe templating constructs. Apply the principle of least privilege to client-side effects: set cookies with HttpOnly and SameSite where appropriate so stolen cookies are less useful, and apply Content Security Policy (CSP) to restrict allowed script sources and reduce impact of injected scripts. Integrate secure-coding rules and static analysis into the build pipeline to flag direct echoes of request data, and add code review checklists that require context-aware encoding on every output. Educate developers on XSS attack scenarios, contexts where encoding differs, and the security implications of echoing user-controlled input.\n\n## Test and validate:\nAdd unit tests and automated integration tests that supply malicious payloads known to trigger XSS (payloads targeting HTML, attribute, JavaScript, CSS and URL contexts) and assert that responses contain properly encoded representations rather than executable script. Include regression tests that scan templating outputs and confirm the application of context-aware encoders. Configure SAST tools and pre-commit code scanners to detect patterns that directly output request data without encoding. Perform periodic dynamic testing (DAST) or manual penetration testing focused on reflected XSS vectors and verify CSP enforcement and cookie protections behave as expected."
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "json.npm.security.package-dependencies-check.package-dependencies-check",
+          "level": "warning",
+          "message": {
+            "text": "The rule flags the presence of a third-party package dependency that is known to be vulnerable or is out of date with known security fixes. Attackers can exploit such vulnerable components to achieve data exposure, privilege escalation, denial of service, or remote code execution depending on the specific flaw in the dependency. Systems that rely on unpatched or unsupported libraries increase the attack surface and may violate operational and regulatory requirements for secure software supply chains."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json",
+                  "uriBaseId": "%6925cb088dafad778e45bb7e%"
+                },
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 5,
+                  "endColumn": 25
+                },
+                "contextRegion": {
+                  "startLine": 14,
+                  "endLine": 14,
+                  "snippet": {
+                    "text": "    \"express\": \"^4.17.1\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "1302238319042076447"
+          },
+          "properties": {
+            "precision": "very-low",
+            "security-severity": "7.5",
+            "status": "enriched",
+            "issue_owner": "Jose",
+            "developer_ids": [],
+            "is_false_positive": false,
+            "false_positive_type": null,
+            "is_mitigated_externally": false,
+            "is_duplicate": false,
+            "duplicate_finding_id": null,
+            "scan_id": "6925cb3ce8c6bb7b07e153aa",
+            "data_source": "plexalyzer",
+            "record_source": null,
+            "nb_occurrences": null,
+            "review_requested_by": null,
+            "epss": 0,
+            "cvssv3": {
+              "score": 7.5,
+              "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+            }
+          },
+          "fixes": [
+            {
+              "description": {
+                "text": "Suggested fix based on mitigation guidance"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "package.json"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 14,
+                        "startColumn": 5,
+                        "endColumn": 25
+                      },
+                      "insertedContent": {
+                        "text": "## Check available versions:\nInventory all direct and transitive dependencies and record exact version identifiers including OSS project, version, and package manager lockfile entries. Compare each dependency against public vulnerability databases (NVD, vendor advisories, and OSS advisories) and the project's security advisories. Maintain an SBOM (software bill of materials) for every build and update it when dependencies change.\n\n## Version update steps:\nPrioritize updates using a risk-based approach: highest-risk vulnerable dependencies (those with available exploits or high impact) should be updated first. For minor/patch updates, update the dependency to the fixed version and update the lockfile to pin the new version. For major-version upgrades, review the dependency's changelog and migration guide, update code that depended on removed/changed APIs, and test thoroughly. If a direct upgrade is impossible, identify and apply available backported security patches from the vendor or a trusted downstream maintainer, or replace the dependency with a maintained alternative. Enforce a policy that only approved, actively maintained dependencies are allowed in production builds.\n\n## adaptations required:\nRefactor application code to remove reliance on deprecated or insecure library APIs. Replace usages of vulnerable functions or modules with calls to maintained, secure equivalents. Where the dependency exposes optional features that introduce risk, configure or compile the library to disable those features. If replacing a dependency with an alternative implementation, ensure interface compatibility or add an adapter layer to isolate the change and limit blast radius.\n\n## Test and validate:\nRun automated dependency vulnerability scans as part of the CI pipeline and fail builds when new critical or high-severity issues are introduced. Perform compatibility and regression testing after any dependency upgrade, including unit, integration, and smoke tests that exercise the upgraded functionality. Include fuzzing or targeted security tests for components that perform parsing, deserialization, or execute dynamic content. Validate production deployments by comparing SBOM before and after deployment and run runtime monitoring to detect anomalous failures or behavior changes introduced by the upgrade."
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "json.npm.security.package-dependencies-check.package-dependencies-check",
+          "level": "warning",
+          "message": {
+            "text": "The rule flags the presence of a third-party package dependency that is known to be vulnerable or is out of date with known security fixes. Attackers can exploit such vulnerable components to achieve data exposure, privilege escalation, denial of service, or remote code execution depending on the specific flaw in the dependency. Systems that rely on unpatched or unsupported libraries increase the attack surface and may violate operational and regulatory requirements for secure software supply chains."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json",
+                  "uriBaseId": "%6925cb088dafad778e45bb7e%"
+                },
+                "region": {
+                  "startLine": 15,
+                  "startColumn": 5,
+                  "endColumn": 25
+                },
+                "contextRegion": {
+                  "startLine": 15,
+                  "endLine": 15,
+                  "snippet": {
+                    "text": "    \"lodash\": \"^4.17.21\""
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "7484168961545749792"
+          },
+          "properties": {
+            "precision": "very-low",
+            "security-severity": "7.5",
+            "status": "enriched",
+            "issue_owner": "Jose",
+            "developer_ids": [],
+            "is_false_positive": false,
+            "false_positive_type": null,
+            "is_mitigated_externally": false,
+            "is_duplicate": false,
+            "duplicate_finding_id": null,
+            "scan_id": "6925cb3ce8c6bb7b07e153aa",
+            "data_source": "plexalyzer",
+            "record_source": null,
+            "nb_occurrences": null,
+            "review_requested_by": null,
+            "epss": 0,
+            "cvssv3": {
+              "score": 7.5,
+              "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N"
+            }
+          },
+          "fixes": [
+            {
+              "description": {
+                "text": "Suggested fix based on mitigation guidance"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "package.json"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 15,
+                        "startColumn": 5,
+                        "endColumn": 25
+                      },
+                      "insertedContent": {
+                        "text": "## Check available versions:\nInventory all direct and transitive dependencies and record exact version identifiers including OSS project, version, and package manager lockfile entries. Compare each dependency against public vulnerability databases (NVD, vendor advisories, and OSS advisories) and the project's security advisories. Maintain an SBOM (software bill of materials) for every build and update it when dependencies change.\n\n## Version update steps:\nPrioritize updates using a risk-based approach: highest-risk vulnerable dependencies (those with available exploits or high impact) should be updated first. For minor/patch updates, update the dependency to the fixed version and update the lockfile to pin the new version. For major-version upgrades, review the dependency's changelog and migration guide, update code that depended on removed/changed APIs, and test thoroughly. If a direct upgrade is impossible, identify and apply available backported security patches from the vendor or a trusted downstream maintainer, or replace the dependency with a maintained alternative. Enforce a policy that only approved, actively maintained dependencies are allowed in production builds.\n\n## adaptations required:\nRefactor application code to remove reliance on deprecated or insecure library APIs. Replace usages of vulnerable functions or modules with calls to maintained, secure equivalents. Where the dependency exposes optional features that introduce risk, configure or compile the library to disable those features. If replacing a dependency with an alternative implementation, ensure interface compatibility or add an adapter layer to isolate the change and limit blast radius.\n\n## Test and validate:\nRun automated dependency vulnerability scans as part of the CI pipeline and fail builds when new critical or high-severity issues are introduced. Perform compatibility and regression testing after any dependency upgrade, including unit, integration, and smoke tests that exercise the upgraded functionality. Include fuzzing or targeted security tests for components that perform parsing, deserialization, or execute dynamic content. Validate production deployments by comparing SBOM before and after deployment and run runtime monitoring to detect anomalous failures or behavior changes introduced by the upgrade."
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "columnKind": "utf16CodeUnits",
+      "originalUriBaseIds": {
+        "6925cb088dafad778e45bb7e": {
+          "uri": "project://6925cb088dafad778e45bb7e/"
+        }
+      },
+      "properties": {
+        "metrics": {
+          "total": 5,
+          "critical": 0,
+          "high": 1,
+          "medium": 4,
+          "low": 0
+        }
+      }
+    }
+  ]
+}
