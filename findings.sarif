@@ -92,8 +92,7 @@
                   "target": {
                     "id": "CWE-89",
                     "toolComponent": {
-                      "name": "CWE",
-                      "guid": "TODO: Add CWE catalog GUID"
+                      "name": "CWE"
                     }
                   },
                   "kinds": [
@@ -104,8 +103,7 @@
                   "target": {
                     "id": "A03: Injection",
                     "toolComponent": {
-                      "name": "OWASP",
-                      "guid": "TODO: Add OWASP catalog GUID"
+                      "name": "OWASP"
                     }
                   },
                   "kinds": [
@@ -116,8 +114,7 @@
                   "target": {
                     "id": "WASC-19",
                     "toolComponent": {
-                      "name": "WASC",
-                      "guid": "TODO: Add WASC catalog GUID"
+                      "name": "WASC"
                     }
                   },
                   "kinds": [
