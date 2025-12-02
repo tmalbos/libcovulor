@@ -2,6 +2,17 @@ name: Upload SARIF to GitHub Security
 
 on:
   workflow_dispatch:
+    inputs:
+      sarif_file_path:
+        description: 'Path to SARIF file (relative to repository root)'
+        required: true
+        type: string
+        default: 'findings.sarif'
+      category:
+        description: 'Category for the SARIF results'
+        required: false
+        type: string
+        default: 'custom-scan'
 
 jobs:
   upload-sarif:
@@ -10,13 +21,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Save SARIF content to file
-        shell: bash
-        run: |
-          printf '%s' "${{ vars.SARIF_CONTENT }}" > results.sarif
-
       - name: Upload SARIF results to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: results.sarif
-          category: ${{ vars.SARIF_CATEGORY || 'custom-scan' }}
+          sarif_file: ${{ github.event.inputs.sarif_file_path }}
+          category: ${{ github.event.inputs.category }}
