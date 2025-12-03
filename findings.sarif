@@ -80,7 +80,7 @@
                     "ruleId": "php.lang.security.injection.tainted-sql-string.tainted-sql-string",
                     "level": "error",
                     "message": {
-                        "text": ""
+                        "text": "SQL Injection vulnerability: User input flows directly into SQL query without parameterization"
                     },
                     "locations": [
                         {
@@ -131,7 +131,7 @@
                     "ruleId": "php.lang.security.injection.echoed-request.echoed-request",
                     "level": "error",
                     "message": {
-                        "text": ""
+                        "text": "Potential XSS vulnerability: Database content echoed directly to output without sanitization"
                     },
                     "locations": [
                         {
@@ -182,7 +182,7 @@
                     "ruleId": "php.lang.security.injection.echoed-request.echoed-request",
                     "level": "error",
                     "message": {
-                        "text": ""
+                        "text": "XSS vulnerability: User-controlled variable echoed directly to HTML output without sanitization"
                     },
                     "locations": [
                         {
@@ -233,7 +233,7 @@
                     "ruleId": "json.npm.security.package-dependencies-check.package-dependencies-check",
                     "level": "warning",
                     "message": {
-                        "text": ""
+                        "text": "Potential vulnerable dependency: express ^4.17.1 should be reviewed for security updates"
                     },
                     "locations": [
                         {
@@ -284,7 +284,7 @@
                     "ruleId": "json.npm.security.package-dependencies-check.package-dependencies-check",
                     "level": "warning",
                     "message": {
-                        "text": ""
+                        "text": "Potential vulnerable dependency: lodash ^4.17.21 should be reviewed for security updates"
                     },
                     "locations": [
                         {
